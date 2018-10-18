@@ -10,6 +10,7 @@ const dao = require('./dao/dao');
 
 class Company {
   ticker: string;
+  visible: boolean;
 
   stats;
   quote;
@@ -28,6 +29,7 @@ class Company {
   dividendYield;
 
   constructor(ticker: string) {
+    this.visible = true;
     this.ticker = ticker;
     this.init(ticker);
   }
@@ -96,7 +98,7 @@ class Dashboard extends Component {
                 {company.change})
               </div>
             </div>
-            <div className='info'>Market Cap: {Math.round(((company.marketcap/1000000000) * 1000)) / 1000}B</div>
+            <div className='info'>Market Cap: {Math.round(((company.marketcap/1000000000) * 1000)) / 1000} B</div>
             <div className='info'>EPS (TTM): {Math.round(company.ttmEPS * 1000) / 1000}</div>
             <div className='info'>PE (TTM): {Math.round((company.price / company.ttmEPS) * 1000) / 1000}</div>
             <div className='info'>
@@ -119,7 +121,7 @@ class Dashboard extends Component {
 class Navbar extends Component {
   render() {
     return (
-      <div>
+      <div id="navbar">
         <nav className='navbar navbar-dark bg-dark justify-content-between'>
           <a id='navbarTitle' className='navbar-brand' href='/'>
             Stockfinder
@@ -138,7 +140,11 @@ class Navbar extends Component {
 
 class Sidebar extends Component {
   render() {
-    return <div />;
+    return (
+      <div id="sidebar" className="nav-side-menu">
+      sidebar
+      </div>
+    );
   }
 }
 
@@ -148,14 +154,17 @@ setTimeout(function(){
   if (root)
     ReactDOM.render(
       <HashRouter>
-        <div class="dashboard">
-          <Navbar />
-          <Sidebar />
-          <div>
-            <Route path='/' component={Dashboard} />
+        <div id='page'>
+        <Navbar />
+          <div id="main">
+            <Sidebar />
+            <div id='dashboard'>
+              <Route path='/' component={Dashboard} />
+            </div>
           </div>
         </div>
-      </HashRouter>,
+      </HashRouter>
+      ,
       root
     );
-}, 1000);
+}, 500);
