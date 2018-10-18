@@ -18,6 +18,14 @@ class Company {
   sector; //another call
   price;
   change;
+  sector;
+  market;
+  marketcap;
+  eps;
+  ttmEPS;
+  sharesOutstanding;
+  dividendRate;
+  dividendYield;
 
   constructor(ticker: string) {
     this.ticker = ticker;
@@ -28,8 +36,17 @@ class Company {
     this.stats = await dao.getStockInfo(ticker, "stats");
     this.quote = await dao.getStockInfo(ticker, "quote");
     this.name = this.stats["companyName"];
+
     this.price = this.quote["latestPrice"];
     this.change = this.quote["change"];
+    this.sector = this.quote["sector"];
+    this.market = this.quote["primaryExchange"];
+    this.marketcap =this.stats["marketcap"];
+    this.ttmEPS = this.stats["ttmEPS"];
+    this.eps = this.stats["latestEPS"];
+    this.sharesOutstanding = this.stats["sharesOutstanding"];
+    this.dividendRate = this.stats["dividendRate"];
+    this.dividendYield = this.stats["dividendYield"];
 
     setInterval(() => {
       this.getRealTime(ticker)
@@ -37,10 +54,19 @@ class Company {
   }
 
   async getRealTime(ticker){
-    this.stats = await dao.getStockInfo(ticker, "stats");
-    this.quote = await dao.getStockInfo(ticker, "quote");
-    this.price = this.quote["latestPrice"];
-    this.change = this.quote["change"];
+    this.stats = await dao.getStockInfo(ticker, 'stats');
+    this.quote = await dao.getStockInfo(ticker, 'quote');
+
+    this.price = this.quote['latestPrice'];
+    this.change = this.quote['change'];
+    this.sector = this.quote['sector'];
+    this.market = this.quote['primaryExchange'];
+    this.marketcap =this.stats['marketcap'];
+    this.ttmEPS = this.stats['ttmEPS'];
+    this.eps = this.stats['latestEPS'];
+    this.sharesOutstanding = this.stats['sharesOutstanding'];
+    this.dividendRate = this.stats['dividendRate'];
+    this.dividendYield = this.stats['dividendYield'];
   }
 
 }
@@ -54,14 +80,28 @@ let companies = [
 ];
 
 class Dashboard extends Component {
+  changeClass = 'change-positive';
 
   render() {
     return (
       <div>
         {companies.map(company => (
-          <div key={company.ticker} className="article">
-            <div className="articleTitle">{company.name}</div>
-            <div className="price">{company.price} USD ({company.change})</div>
+          <div key={company.ticker} className='article'>
+            <div className='article-title'>{company.name}</div>
+            <div className='sector'>{company.sector}</div>
+            <div>
+              <div className='price'>{company.price} USD</div>
+              <div className={(company.change > 0) ? "change-positive" : "change-negative"}>
+                ({(company.change > 0) ? "+" : ""}
+                {company.change})
+              </div>
+            </div>
+            <div className='info'>Market Cap: {Math.round(((company.marketcap/1000000000) * 1000)) / 1000}B</div>
+            <div className='info'>EPS (TTM): {Math.round(company.ttmEPS * 1000) / 1000}</div>
+            <div className='info'>PE (TTM): {Math.round((company.price / company.ttmEPS) * 1000) / 1000}</div>
+            <div className='info'>
+              Dividend: {company.dividendRate} ({Math.round(company.dividendYield * 1000) / 1000}%)
+            </div>
           </div>
         ))}
       </div>
@@ -80,13 +120,13 @@ class Navbar extends Component {
   render() {
     return (
       <div>
-        <nav className="navbar navbar-dark bg-dark justify-content-between">
-          <a id="navbarTitle" className="navbar-brand" href="/">
+        <nav className='navbar navbar-dark bg-dark justify-content-between'>
+          <a id='navbarTitle' className='navbar-brand' href='/'>
             Stockfinder
           </a>
-          <form className="form-inline">
-            <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" />
-            <button className="btn btn-outline-success my-2 my-sm-0" type="submit">
+          <form className='form-inline'>
+            <input className='form-control mr-sm-2' type='search' placeholder='Search' aria-label='Search' />
+            <button className='btn btn-outline-success my-2 my-sm-0' type='submit'>
               Search
             </button>
           </form>
@@ -108,11 +148,11 @@ setTimeout(function(){
   if (root)
     ReactDOM.render(
       <HashRouter>
-        <div>
+        <div class="dashboard">
           <Navbar />
           <Sidebar />
           <div>
-            <Route path="/" component={Dashboard} />
+            <Route path='/' component={Dashboard} />
           </div>
         </div>
       </HashRouter>,

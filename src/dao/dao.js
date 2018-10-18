@@ -6,26 +6,26 @@ function getStockInfo(ticker: string, type: string) {
 let path = '/stock/' + ticker + '/' + type;
 
 return new Promise((resolve, reject) => {
-https.get(host + path, resp => {
-    let data = '';
+  https.get(host + path, resp => {
+      let data = '';
 
-    // A chunk of data has been recieved.
-    resp.on('data', chunk => {
-      data += chunk;
+      // A chunk of data has been recieved.
+      resp.on('data', chunk => {
+        data += chunk;
+      });
+
+      // The whole response has been received. Print out the result.
+      resp.on('end', () => {
+        //console.log(JSON.parse(data)["companyName"]);
+        const parsedData = JSON.parse(data);
+        resolve(parsedData);
+      });
+
+    })
+    .on('error', err => {
+      console.log('Error: ' + err.message);
     });
-
-    // The whole response has been received. Print out the result.
-    resp.on('end', () => {
-      //console.log(JSON.parse(data)["companyName"]);
-      const parsedData = JSON.parse(data);
-      resolve(parsedData);
-    });
-
-  })
-  .on('error', err => {
-    console.log('Error: ' + err.message);
   });
-});
 }
 
 module.exports = {
