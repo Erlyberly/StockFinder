@@ -16,7 +16,6 @@ class Company {
   quote;
 
   name;
-  sector; //another call
   price;
   change;
   changePercent;
@@ -84,12 +83,12 @@ class Dashboard extends Component {
     return (
       <div className="page">
         <Navbar />
-        <div id="main">
+        <div id="main-dashboard">
           <Sidebar />
           <div id="dashboard">
             {companies.map(company => (
               <div key={company.ticker} className={company.visible ? 'article-visible' : 'article-hidden'}>
-                <a to="/StockInfo">
+                <a href={'#/StockInfo/' + company.ticker}>
                   <div className="article-title">{company.name}</div>
                 </a>
                 <div className="sector">{company.sector}</div>
@@ -128,7 +127,7 @@ class Navbar extends Component {
     return (
       <div id="navbar">
         <nav className="navbar navbar-dark bg-dark justify-content-between">
-          <a id="navbarTitle" className="navbar-brand" href="/">
+          <a id="navbarTitle" className="navbar-brand" href="#/Dashboard">
             Stockfinder
           </a>
           <form className="form-inline">
@@ -137,6 +136,20 @@ class Navbar extends Component {
               Search
             </button>
           </form>
+        </nav>
+      </div>
+    );
+  }
+}
+
+class NavbarNoSearch extends Component {
+  render() {
+    return (
+      <div id="navbar">
+        <nav className="navbar navbar-dark bg-dark justify-content-between">
+          <a id="navbarTitle" className="navbar-brand" href="#/Dashboard">
+            Stockfinder
+          </a>
         </nav>
       </div>
     );
@@ -176,9 +189,27 @@ class Sidebar extends Component {
   }
 }
 
-class StockInfo extends Component {
+class StockInfo extends Component<{ match: { params: { ticker: string } } }> {
+  company = new Company(this.props.match.params.ticker);
+
   render() {
-    return <div>test</div>;
+    return (
+      <div className="page">
+        <NavbarNoSearch />
+        <div id="main-stockinfo">
+          <h1 id="stockinfo-title">
+            {this.company.name}
+            {' ' + this.company.price}
+          </h1>
+        </div>
+      </div>
+    );
+  }
+
+  mounted() {
+    setInterval(() => {
+      this.forceUpdate();
+    }, 1000);
   }
 }
 
@@ -189,10 +220,10 @@ setTimeout(function() {
     ReactDOM.render(
       <HashRouter>
         <div className="page">
-          <Route path="/" component={StockInfo} />
-          <Route path="/stockInfo" component={Dashboard} />
+          <Route path="/Dashboard" component={Dashboard} />
+          <Route path="/StockInfo/:ticker" component={StockInfo} />
         </div>
       </HashRouter>,
       root
     );
-}, 500);
+}, 0);
