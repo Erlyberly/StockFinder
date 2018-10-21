@@ -16,7 +16,10 @@ return new Promise((resolve, reject) => {
 
       // The whole response has been received. Print out the result.
       resp.on('end', () => {
-        //console.log(JSON.parse(data)["companyName"]);
+        if(data === "Not Found" || data === "Unknown symbol"){
+          resolve(404);
+          return;
+        }
         const parsedData = JSON.parse(data);
         resolve(parsedData);
       });

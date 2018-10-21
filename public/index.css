@@ -19,16 +19,22 @@ html, body {
 
 #navbar {
   position: fixed;
-  width: 100%
+  width: 100%;
 }
 
 #main {
+  overflow: auto;
+  background-color: #0f1f2e;
   width: 100%;
   height: 100%;
-  padding-top: 50px;
+  padding-top: 56px;
+  padding-left: 200px;
+  margin-right: 0;
 }
 
 #sidebar {
+  position: fixed;
+  text-align: center;
   height: 100%;
   width: 200px;
   background-color: rgb(80, 80, 85);
@@ -37,15 +43,30 @@ html, body {
   float: left;
 }
 
+#register {
+  position: absolute;
+  bottom: 60px;
+  left: 10px;
+}
+
+#register-button {
+  height: 30px;
+  margin: 10px;
+}
+
+#register-input {
+  text-align: center;
+}
+
 #dashboard {
-  background-color: #0f1f2e;
   width: 100%;
   height: 100%;
 }
 
-.article {
+.article-visible {
+  visibility: visible;
   height: 300px;
-  width: 190px;
+  width: 220px;
   border-width: 2px;
   border-style: solid;
   border-radius: 7px;
@@ -56,6 +77,13 @@ html, body {
   float: left;
   cursor: pointer;
   color: black;
+}
+
+.article-hidden {
+  visibility: hidden;
+  height: 0;
+  width: 0;
+  float: left;
 }
 
 .article:hover {

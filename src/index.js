@@ -19,6 +19,7 @@ class Company {
   sector; //another call
   price;
   change;
+  changePercent;
   sector;
   market;
   marketcap;
@@ -41,6 +42,7 @@ class Company {
 
     this.price = this.quote["latestPrice"];
     this.change = this.quote["change"];
+    this.changePercent = this.quote["changePercent"];
     this.sector = this.quote["sector"];
     this.market = this.quote["primaryExchange"];
     this.marketcap =this.stats["marketcap"];
@@ -61,6 +63,7 @@ class Company {
 
     this.price = this.quote['latestPrice'];
     this.change = this.quote['change'];
+    this.changePercent = this.quote["changePercent"];
     this.sector = this.quote['sector'];
     this.market = this.quote['primaryExchange'];
     this.marketcap =this.stats['marketcap'];
@@ -81,21 +84,23 @@ let companies = [
   new Company('GOOGL')
 ];
 
+companies[2].visible = false;
+
 class Dashboard extends Component {
   changeClass = 'change-positive';
 
   render() {
     return (
-      <div>
+      <div id='dashboard'>
         {companies.map(company => (
-          <div key={company.ticker} className='article'>
+          <div key={company.ticker} className={company.visible ? 'article-visible' : 'article-hidden'}>
             <div className='article-title'>{company.name}</div>
             <div className='sector'>{company.sector}</div>
             <div>
               <div className='price'>{company.price} USD</div>
-              <div className={(company.change > 0) ? "change-positive" : "change-negative"}>
-                ({(company.change > 0) ? "+" : ""}
-                {company.change})
+              <div className={(company.changePercent > 0) ? "change-positive" : "change-negative"}>
+                ({(company.changePercent > 0) ? "+" : ""}
+                {Math.round(company.changePercent * 10000) / 100}%)
               </div>
             </div>
             <div className='info'>Market Cap: {Math.round(((company.marketcap/1000000000) * 1000)) / 1000} B</div>
@@ -139,12 +144,34 @@ class Navbar extends Component {
 }
 
 class Sidebar extends Component {
+
+  ticker = "";
+
   render() {
     return (
-      <div id="sidebar" className="nav-side-menu">
-      sidebar
+      <div id='sidebar' className='nav-side-menu'>
+        sidebar
+        <div id='register'>
+          <div>
+            <input
+              id='register-input'
+              type='text'
+              value={this.ticker}
+              onChange={(event: SyntheticInputEvent<HTMLInputElement>) => (this.ticker = event.target.value)}
+            />
+          </div>
+          <div>
+            <button id='register-button' onClick={this.buttonClicked}>Register</button>
+          </div>
+        </div>
       </div>
     );
+  }
+
+  async buttonClicked() {
+    if(await dao.getStockInfo(this.ticker, 'price') !== 404){
+      companies.push(new Company(this.ticker));
+    }
   }
 }
 
@@ -158,9 +185,7 @@ setTimeout(function(){
         <Navbar />
           <div id="main">
             <Sidebar />
-            <div id='dashboard'>
-              <Route path='/' component={Dashboard} />
-            </div>
+            <Route path='/' component={Dashboard} />
           </div>
         </div>
       </HashRouter>
