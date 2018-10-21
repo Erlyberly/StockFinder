@@ -1,6 +1,6 @@
 // @flow
 /* eslint eqeqeq: "off" */
-/*
+
 import * as React from 'react';
 import { Component } from 'react-simplified';
 import { HashRouter, Route, NavLink } from 'react-router-dom';
@@ -49,12 +49,16 @@ class Menu extends Component {
   render() {
     return (
       <nav class="navbar navbar-light bg-light justify-content-between">
-  <a class="navbar-brand">Navbar</a>
-  <form class="form-inline">
-    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"> </input>
-    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-  </form>
-</nav>
+        <a class="navbar-brand">Navbar</a>
+        <form class="form-inline">
+          <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            {' '}
+          </input>
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">
+            Search
+          </button>
+        </form>
+      </nav>
     );
   }
 }
@@ -179,4 +183,3 @@ if (root)
     </HashRouter>,
     root
   );
-*/

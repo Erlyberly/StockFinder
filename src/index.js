@@ -89,9 +89,9 @@ class Dashboard extends Component {
           <div id="dashboard">
             {companies.map(company => (
               <div key={company.ticker} className={company.visible ? 'article-visible' : 'article-hidden'}>
-                <div className="article-title" href="/">
-                  {company.name}
-                </div>
+                <a to="/StockInfo">
+                  <div className="article-title">{company.name}</div>
+                </a>
                 <div className="sector">{company.sector}</div>
                 <div>
                   <div className="price">{company.price} USD</div>
@@ -178,7 +178,7 @@ class Sidebar extends Component {
 
 class StockInfo extends Component {
   render() {
-    return <div />;
+    return <div>test</div>;
   }
 }
 
@@ -189,8 +189,8 @@ setTimeout(function() {
     ReactDOM.render(
       <HashRouter>
         <div className="page">
-          <Route path="/" component={Dashboard} />
-          <Route path="/stockInfo:ticker" component={StockInfo} />
+          <Route path="/" component={StockInfo} />
+          <Route path="/stockInfo" component={Dashboard} />
         </div>
       </HashRouter>,
       root
