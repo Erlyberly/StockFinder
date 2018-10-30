@@ -1,7 +1,7 @@
 const https = require('https');
 let host = 'https://api.iextrading.com/1.0';
 
-function getStockInfo(ticker: string, type: string) {
+export function getStockInfo(ticker: string, type: string) {
 //console.log("Getting data...");
 let path = '/stock/' + ticker + '/' + type;
 
@@ -29,9 +29,4 @@ return new Promise((resolve, reject) => {
       console.log('Error: ' + err.message);
     });
   });
-}
-
-
-module.exports = {
-  getStockInfo: getStockInfo
 }

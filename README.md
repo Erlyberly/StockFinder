@@ -1,4 +1,4 @@
-# React example with static pages
+# Stockfinder
 
 ## Prerequisites
 * Flow and Prettier installed globally:
@@ -13,5 +13,3 @@ git clone https://gitlab.com/tdat2003/react-static-pages
 cd react-static-pages
 npm install
 npm start
-```
-# Stockfinder
