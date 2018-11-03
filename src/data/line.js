@@ -1,27 +1,22 @@
 const stock = require('./stock');
 
-let handler = {
-	get: function(target, name) {
-  	return name in target ? target[name] : "Key does not exist";
-  }
-}
-
-let obj = {
-  c: "car",
-  b: "bike"
-};
-
-let proxyObj = new Proxy(obj, handler);
-
 export function data(chart) {
 
-  console.log(chart);
+	var labels = [];
+	var data = [];
+
+//console.log(chart);
+
+	chart.map(chart =>(
+		labels.push(chart['label']),
+		data.push(chart['close'])
+	));
 
   var out = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+    labels: labels,
     datasets: [
       {
-        label: 'My First dataset',
+        label: 'Close price',
         fill: false,
         lineTension: 0.01,
         backgroundColor: 'rgba(75,192,192,1)',
@@ -39,7 +34,7 @@ export function data(chart) {
         pointHoverBorderWidth: 2,
         pointRadius: 1,
         pointHitRadius: 10,
-        data: [65, 59, 80, 81, 56, 55, 40]
+        data: data
       }
     ]
   }

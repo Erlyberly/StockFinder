@@ -2,7 +2,7 @@ const dao = require('../dao/dao');
 
 export class Stock {
   ticker = "";
-  promise;
+  init = false;
   visible: boolean;
 
   stats;
@@ -25,14 +25,14 @@ export class Stock {
   constructor(ticker: string) {
     this.visible = true;
     this.ticker = ticker;
-    this.init(ticker);
+    this.initialize(ticker);
   }
 
-  async init(ticker) {
+  async initialize(ticker) {
     this.stats = await dao.getStockInfo(ticker, 'stats');
     this.quote = await dao.getStockInfo(ticker, 'quote');
-    this.name = this.stats['companyName'];
 
+    this.name = this.stats['companyName'];
     this.price = this.quote['latestPrice'];
     this.change = this.quote['change'];
     this.changePercent = this.quote['changePercent'];
@@ -44,6 +44,8 @@ export class Stock {
     this.sharesOutstanding = this.stats['sharesOutstanding'];
     this.dividendRate = this.stats['dividendRate'];
     this.dividendYield = this.stats['dividendYield'];
+
+    this.init = true;
   }
 
   async update() {
@@ -72,8 +74,8 @@ export class Stock {
   }
 
   async getChartData(timePeriod){
-    var proxyObject = await dao.getStockInfo(this.ticker, ('chart/' + timePeriod));
-    this.chart = proxyObject;
+    var proxyObject = dao.getStockInfo(this.ticker, ('chart/' + timePeriod));
+    this.chart = await proxyObject;
     return this.chart;
   }
 
