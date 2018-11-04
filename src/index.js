@@ -4,7 +4,7 @@ import * as React from 'react';
 import { Component, sharedComponentData } from 'react-simplified';
 import { HashRouter, Route } from 'react-router-dom';
 import ReactDOM from 'react-dom';
-import {Line} from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 
 const dao = require('./dao/dao');
 const stock = require('./data/stock');
@@ -15,30 +15,30 @@ let shared = sharedComponentData({
   stocks: [new stock.Stock('GOOG'), new stock.Stock('AAPL'), new stock.Stock('AMZN'), new stock.Stock('NFLX')]
 });
 
-class Card extends Component<{id?: string, className?: string, title?: React.Node, children?: React.Node}> {
+class Card extends Component<{ id?: string, className?: string, title?: React.Node, children?: React.Node }> {
   render() {
-    return(
-      <div id={this.props.id} className={"card " + this.props.className}>
+    return (
+      <div id={this.props.id} className={'card ' + this.props.className}>
         <div className="card-body">
           <h5 className="card-title">{this.props.title}</h5>
           <div className="card-text">{this.props.children}</div>
         </div>
       </div>
-    )
+    );
   }
 }
 
-class Row extends Component<{id?: string, className?: string, style?: {}, children?: any}>{
-  render(){
+class Row extends Component<{ id?: string, className?: string, style?: {}, children?: any }> {
+  render() {
     return (
       <div id={this.props.id} className={this.props.className} style={this.props.style}>
         {this.props.children}
       </div>
-    )
+    );
   }
 }
 
-//Main site. Path: '/'
+//Main site. Exact path: '/'
 class Dashboard extends Component {
   changeClass = 'change-positive';
   interval = null;
@@ -63,11 +63,16 @@ class Dashboard extends Component {
                     {Math.round(stock.changePercent * 10000) / 100}
                     %)
                   </Row>
-                </Row>
-                <Row className="info">Market Cap: {Math.round((stock.marketcap / 1000000000) * 1000) / 1000} B</Row>
-                <Row className="info">EPS (TTM): {Math.round(stock.ttmEPS * 1000) / 1000}</Row>
-                <Row className="info">PE (TTM): {Math.round((stock.price / stock.ttmEPS) * 1000) / 1000}</Row>
-                <Row className="info">  Dividend: {stock.dividendRate} ({Math.round(stock.dividendYield * 1000) / 1000}%)
+                  <div class="progress">
+                    <div
+                      class="progress-bar bg-danger"
+                      role="progressbar"
+                      style={{ width: '70%' }}
+                      aria-valuenow="25"
+                      aria-valuemin="0"
+                      aria-valuemax="50"
+                    />
+                  </div>
                 </Row>
               </Row>
             ))}
@@ -80,11 +85,12 @@ class Dashboard extends Component {
   mounted() {
     var count = 0;
     this.interval = setInterval(() => {
-      (shared.stocks.map(stock => stock.update(stock.ticker)));
+      shared.stocks.map(stock => stock.update(stock.ticker));
+      this.forceUpdate();
     }, 2000);
   }
 
-  beforeUnmount(){
+  beforeUnmount() {
     if (this.interval) clearInterval(this.interval);
   }
 }
@@ -146,7 +152,7 @@ class Sidebar extends Component {
 
 //Shows all information for a specific stock. Path = '/StockInfo'
 class StockInfo extends Component<{ update: boolean, match: { params: { ticker: string } } }> {
-  stock = null;
+  stock: stock.Stock = null;
   loaded = false;
   interval = null;
 
@@ -155,52 +161,76 @@ class StockInfo extends Component<{ update: boolean, match: { params: { ticker: 
   //}
 
   render() {
-      return (
-        this.loaded ? (
-          <Row className="page">
-            <Navbar />
-            <Row id="main-stockinfo">
-              <Row id='stockinfo-price'>
-                <Row>
-                  <h1 id="stockinfo-title">{this.stock.name}</h1>
-                  <h2 id='stockinfo-market'>{this.stock.market}</h2>
-                </Row>
-                <Row>
-                  <Row className='stockinfo-change left'>{this.stock.price} USD</Row>
-                  <Row className={(this.stock.changePercent > 0 ? 'change-positive' : 'change-negative') + ' stockinfo-change'} >
-                    ({this.stock.changePercent > 0 ? '+' : ''}
-                    {Math.round(this.stock.changePercent * 10000) / 100}
-                    %)
-                </Row>
-                </Row>
-              </Row>
-              <Row className='h-100 w-100'>
-              <Card id='graph'>
-              <div className='btn-group d-flex' role='group'>
-              <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('1d')}>1 Day</button>
-              <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('1m')}>1 Month</button>
-              <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('6m')}>6 Months</button>
-              <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('ytd')}>YTD</button>
-              <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('1y')}>1 Year</button>
-              <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('2y')}>2 Years</button>
-              <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('5y')}>5 Years</button>
-              </div>
-              <Line data={line.data(this.stock.chart)} />
-              </Card>
-                <Card id='basic-info' title='Essentials'>
-                <Row className="info">Market Cap: {Math.round((this.stock.marketcap / 1000000000) * 1000) / 1000} B</Row>
-                <Row className="info">EPS (TTM): {Math.round(this.stock.ttmEPS * 1000) / 1000}</Row>
-                <Row className="info">PE (TTM): {Math.round((this.stock.price / this.stock.ttmEPS) * 1000) / 1000}</Row>
-                <Row className="info">  Dividend: {this.stock.dividendRate} ({Math.round(this.stock.dividendYield * 1000) / 1000}%)</Row>
-                </Card>
+    return this.loaded ? (
+      <Row className="page">
+        <Navbar />
+        <Row id="main-stockinfo">
+          <Row id="stockinfo-price">
+            <Row>
+              <h1 id="stockinfo-title">{this.stock.name}</h1>
+              <h2 id="stockinfo-market">{this.stock.market}</h2>
+            </Row>
+            <Row>
+              <Row className="stockinfo-change left">{this.stock.price} USD</Row>
+              <Row
+                className={(this.stock.changePercent > 0 ? 'change-positive' : 'change-negative') + ' stockinfo-change'}
+              >
+                ({this.stock.changePercent > 0 ? '+' : ''}
+                {Math.round(this.stock.changePercent * 10000) / 100}
+                %)
               </Row>
             </Row>
           </Row>
-        ) : (<span>Loading...</span>)
-      )
+          <Row className="h-100 w-100">
+            <Card id="graph">
+              <div className="btn-group d-flex" role="group">
+                <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('1d')}>
+                  1 Day
+                </button>
+                <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('1m')}>
+                  1 Month
+                </button>
+                <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('6m')}>
+                  6 Months
+                </button>
+                <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('ytd')}>
+                  YTD
+                </button>
+                <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('1y')}>
+                  1 Year
+                </button>
+                <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('2y')}>
+                  2 Years
+                </button>
+                <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('5y')}>
+                  5 Years
+                </button>
+              </div>
+              <Line data={line.data(this.stock.chart)} />
+            </Card>
+            <Card id="essentials" title="Essentials">
+              <Row className="info">Market Cap: {Math.round((this.stock.marketcap / 1000000000) * 1000) / 1000} B</Row>
+              <Row className="info">EPS (TTM): {Math.round(this.stock.ttmEPS * 1000) / 1000}</Row>
+              <Row className="info">PE (TTM): {this.stock.peRatio}</Row>
+              <Row className="info">
+                {' '}
+                Dividend: {this.stock.dividendRate} ({Math.round(this.stock.dividendYield * 1000) / 1000}
+                %)
+              </Row>
+              <Row className="info">YearAgoChangePercent : {this.stock.yearAgoChangePercent}</Row>
+              <Row className="info">
+                PEG (not working): {Math.round((this.stock.peRatio * 100) / this.stock.yearAgoChangePercent) / 1000}
+              </Row>
+            </Card>
+          </Row>
+        </Row>
+      </Row>
+    ) : (
+      <span>Loading...</span>
+    );
   }
 
-  changeGraph(timePeriod){
+  changeGraph(timePeriod) {
     this.stock.getChartData(timePeriod);
   }
 
@@ -208,12 +238,12 @@ class StockInfo extends Component<{ update: boolean, match: { params: { ticker: 
     this.stock = new stock.Stock(this.props.match.params.ticker);
     this.stock.getChartData('1d');
     this.interval = setInterval(() => {
-          this.loaded = this.stock.init;
-          if(this.loaded) clearInterval(this.interval);
+      this.loaded = this.stock.init;
+      if (this.loaded) clearInterval(this.interval);
     }, 100);
   }
 
-  beforeUnmount(){
+  beforeUnmount() {
     if (this.interval) clearInterval(this.interval);
   }
 }
