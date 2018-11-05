@@ -5,6 +5,8 @@ import { Component, sharedComponentData } from 'react-simplified';
 import { HashRouter, Route } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import { Line } from 'react-chartjs-2';
+import { Progress } from 'react-sweet-progress';
+import "react-sweet-progress/lib/style.css";
 
 const dao = require('./dao/dao');
 const stock = require('./data/stock');
@@ -63,16 +65,15 @@ class Dashboard extends Component {
                     {Math.round(stock.changePercent * 10000) / 100}
                     %)
                   </Row>
-                  <div class="progress">
-                    <div
-                      class="progress-bar bg-danger"
-                      role="progressbar"
-                      style={{ width: '70%' }}
-                      aria-valuenow="25"
-                      aria-valuemin="0"
-                      aria-valuemax="50"
-                    />
-                  </div>
+                  <Progress
+                    percent={88}
+                    status="default"
+                    theme={{
+                      default: {
+                        symbol: '❤️',
+                      }
+                    }}
+                  />
                 </Row>
               </Row>
             ))}

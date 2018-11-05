@@ -10,7 +10,8 @@
     "react-chartjs-2": "^2.7.4",
     "react-router-dom": "^4.3.1",
     "react-scripts": "^2.0.4",
-    "react-simplified": "^1.5.1"
+    "react-simplified": "^1.5.1",
+    "react-sweet-progress": "^1.1.2"
   },
   "browserslist": [
     ">0.2%",
