@@ -1,5 +1,3 @@
-const stock = require('./stock');
-
 export function data(chart) {
 
 	var labels = [];

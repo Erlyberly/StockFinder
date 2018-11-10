@@ -2,7 +2,7 @@
 /* eslint eqeqeq: "off" */
 import * as React from 'react';
 import { Component, sharedComponentData } from 'react-simplified';
-import { HashRouter, Route } from 'react-router-dom';
+import { HashRouter, Route, Link } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import { Line } from 'react-chartjs-2';
 import { Progress } from 'react-sweet-progress';
@@ -13,9 +13,20 @@ const stock = require('./data/stock');
 const compare = require('./util/compare');
 const line = require('./data/line');
 
+let symbols = ['aapl', 'baba'];
+let loaded = false;
+
 let shared = sharedComponentData({
-  stocks: [new stock.Stock('GOOG'), new stock.Stock('AAPL'), new stock.Stock('AMZN'), new stock.Stock('NFLX')]
+  stocks: []
 });
+
+async function initialize(){
+  symbols = await dao.getSymbols();
+  loaded = true;
+}
+
+initialize();
+
 
 class Card extends Component<{ id?: string, className?: string, title?: React.Node, children?: React.Node }> {
   render() {
@@ -41,9 +52,11 @@ class Row extends Component<{ id?: string, className?: string, style?: {}, child
 }
 
 //Main site. Exact path: '/'
-class Dashboard extends Component {
+class Dashboard extends Component<{ update: boolean, match: { params: { search: string } } }> {
   changeClass = 'change-positive';
   interval = null;
+  search = '';
+  stocks = [];
 
   render() {
     return (
@@ -84,7 +97,25 @@ class Dashboard extends Component {
   }
 
   mounted() {
-    var count = 0;
+    if(this.props.match.params.search != null){
+      this.search = this.props.match.params.search;
+    }
+
+    //console.log(symbols[0]['symbol']);
+
+    let regExp = new RegExp('a');
+
+    symbols.map(symbol =>{
+      //console.log(symbol['symbol']);
+      console.log(symbol['symbol'].match(regExp));
+      if(symbol['symbol'].match(regExp)){
+        console.log(symbol['symbol']);
+        this.stocks.push(symbol);
+      }
+    });
+
+    console.log(this.stocks);
+
     this.interval = setInterval(() => {
       shared.stocks.map(stock => stock.update(stock.ticker));
       this.forceUpdate();
@@ -98,18 +129,23 @@ class Dashboard extends Component {
 
 //Navbar for dashboard
 class Navbar extends Component {
+  input = '';
+
   render() {
     return (
       <Row id="navbar">
         <nav className="navbar navbar-dark bg-dark justify-content-between">
-          <a id="navbarTitle" className="navbar-brand" href="#/">
+          <a id="navbarTitle" className="navbar-brand" href="">
             Stockfinder
           </a>
           <form className="form-inline">
-            <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" />
+            <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"
+            value={this.input} onChange={(e) => {this.input = e.target.value}}/>
+            <Link to={this.input}>
             <button className="btn btn-outline-success my-2 my-sm-0" type="submit">
               Search
             </button>
+            </Link>
           </form>
         </nav>
       </Row>
@@ -251,15 +287,24 @@ class StockInfo extends Component<{ update: boolean, match: { params: { ticker: 
 
 const root = document.getElementById('root');
 
-setTimeout(function() {
-  if (root)
+var loader = setInterval(function(){
+  if(loaded){
+    rootRender();
+    clearInterval(loader);
+  }
+}, 100);
+
+function rootRender(){
+  if (root){
     ReactDOM.render(
       <HashRouter>
         <Row className="page">
           <Route exact path="/" component={Dashboard} />
+          <Route exact path="/Search/:key" component={Dashboard} />
           <Route path="/StockInfo/:ticker" component={StockInfo} />
         </Row>
       </HashRouter>,
       root
     );
-}, 1000);
+  }
+}
