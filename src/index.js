@@ -8,9 +8,11 @@ import { Line } from 'react-chartjs-2';
 import { Progress } from 'react-sweet-progress';
 import "react-sweet-progress/lib/style.css";
 
+//import createHashHistory from 'history/createHashHistory';
+//const history = createHashHistory(); // Use history.push(...) to programmatically change path
 const dao = require('./dao/dao');
 const stock = require('./data/stock');
-const compare = require('./util/compare');
+//const compare = require('./util/compare');
 const line = require('./data/line');
 
 let symbols = ['aapl', 'baba'];
@@ -23,6 +25,7 @@ let shared = sharedComponentData({
 async function initialize(){
   symbols = await dao.getSymbols();
   loaded = true;
+  console.log('Initialized');
 }
 
 initialize();
@@ -52,11 +55,16 @@ class Row extends Component<{ id?: string, className?: string, style?: {}, child
 }
 
 //Main site. Exact path: '/'
-class Dashboard extends Component<{ update: boolean, match: { params: { search: string } } }> {
+let updateDashboard = true;
+class Dashboard extends Component<{ match: { params: { key: string } } }> {
+
   changeClass = 'change-positive';
   interval = null;
   search = '';
-  stocks = [];
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return updateDashboard;
+  }
 
   render() {
     return (
@@ -68,7 +76,7 @@ class Dashboard extends Component<{ update: boolean, match: { params: { search: 
             {shared.stocks.map(stock => (
               <Row key={stock.ticker} className={stock.visible ? 'article-visible' : 'article-hidden'}>
                 <a href={'#/StockInfo/' + stock.ticker}>
-                  <Row className="article-title">{stock.name}</Row>
+                  <Row className="article-title">{stock.name + ' (' + stock.ticker + ')'}</Row>
                 </a>
                 <Row className="sector">{stock.sector}</Row>
                 <Row>
@@ -97,24 +105,22 @@ class Dashboard extends Component<{ update: boolean, match: { params: { search: 
   }
 
   mounted() {
-    if(this.props.match.params.search != null){
-      this.search = this.props.match.params.search;
+    updateDashboard = true;
+    if(this.props.match.params.key != null){
+      this.search = this.props.match.params.key.toUpperCase();
     }
 
-    //console.log(symbols[0]['symbol']);
+    let regExp = new RegExp(this.search);
 
-    let regExp = new RegExp('a');
-
-    symbols.map(symbol =>{
-      //console.log(symbol['symbol']);
-      console.log(symbol['symbol'].match(regExp));
-      if(symbol['symbol'].match(regExp)){
-        console.log(symbol['symbol']);
-        this.stocks.push(symbol);
+    let count = 0;
+    symbols.forEach(symbol => {
+      if(symbol['symbol'].match(regExp) != null || symbol['name'].match(regExp)){
+        if(count < 6){
+          shared.stocks.push(new stock.Stock(symbol['symbol']));
+          count++;
+        }
       }
     });
-
-    console.log(this.stocks);
 
     this.interval = setInterval(() => {
       shared.stocks.map(stock => stock.update(stock.ticker));
@@ -135,14 +141,14 @@ class Navbar extends Component {
     return (
       <Row id="navbar">
         <nav className="navbar navbar-dark bg-dark justify-content-between">
-          <a id="navbarTitle" className="navbar-brand" href="">
+          <a id="navbarTitle" className="navbar-brand" href="/">
             Stockfinder
           </a>
           <form className="form-inline">
             <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"
             value={this.input} onChange={(e) => {this.input = e.target.value}}/>
-            <Link to={this.input}>
-            <button className="btn btn-outline-success my-2 my-sm-0" type="submit">
+            <Link to={'/' + this.input}>
+            <button className="btn btn-outline-success my-2 my-sm-0" type="submit" onClick={() => this.search()}>
               Search
             </button>
             </Link>
@@ -151,31 +157,20 @@ class Navbar extends Component {
       </Row>
     );
   }
+
+  search(){
+      shared.Stocks = [];
+      updateDashboard = false;
+      window.location.reload();
+  }
 }
 
 //Sidebar for dashboard
 class Sidebar extends Component {
-  ticker = '';
-
   render() {
     return (
       <Row id="sidebar" className="nav-side-menu">
         sidebar
-        <Row id="register">
-          <Row>
-            <input
-              id="register-input"
-              type="text"
-              value={this.ticker}
-              onChange={(event: SyntheticInputEvent<HTMLInputElement>) => (this.ticker = event.target.value)}
-            />
-          </Row>
-          <Row>
-            <button id="register-button" onClick={this.buttonClicked}>
-              Register
-            </button>
-          </Row>
-        </Row>
       </Row>
     );
   }
@@ -300,7 +295,7 @@ function rootRender(){
       <HashRouter>
         <Row className="page">
           <Route exact path="/" component={Dashboard} />
-          <Route exact path="/Search/:key" component={Dashboard} />
+          <Route exact path="/:key" component={Dashboard} />
           <Route path="/StockInfo/:ticker" component={StockInfo} />
         </Row>
       </HashRouter>,

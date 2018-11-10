@@ -33,7 +33,7 @@ export function getStockInfo(ticker: string, type: string) {
 
 export function getSymbols(){
 
-  let path = '/ref-data/symbols?filter=symbol';
+  let path = '/ref-data/symbols';
 
   return new Promise((resolve, reject) => {
     https.get(host + path, resp => {

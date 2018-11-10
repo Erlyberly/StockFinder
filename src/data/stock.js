@@ -55,12 +55,6 @@ export class Stock {
     this.sharesOutstanding = this.stats['sharesOutstanding'];
     this.dividendRate = this.stats['dividendRate'];
     this.dividendYield = this.stats['dividendYield'];
-    this.yearAgoChangePercent =
-      (this.earnings['earnings'][0]['yearAgoChangePercent'] +
-        this.earnings['earnings'][1]['yearAgoChangePercent'] +
-        this.earnings['earnings'][2]['yearAgoChangePercent'] +
-        this.earnings['earnings'][3]['yearAgoChangePercent']) /
-      4;
     this.init = true;
   }
 
@@ -81,7 +75,6 @@ export class Stock {
     this.sharesOutstanding = this.stats['sharesOutstanding'];
     this.dividendRate = this.stats['dividendRate'];
     this.dividendYield = this.stats['dividendYield'];
-    this.yearAgoChangePercent = this.earnings['yearAgoChangePercent'];
   }
 
   async getChartData(timePeriod) {

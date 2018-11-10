@@ -3,12 +3,10 @@ export function data(chart) {
 	var labels = [];
 	var data = [];
 
-//console.log(chart);
-
-	chart.map(chart =>(
-		labels.push(chart['label']),
-		data.push(chart['close'])
-	));
+	chart.forEach(chart => {
+		labels.push(chart['label']);
+		data.push(chart['close']);
+	});
 
   var out = {
     labels: labels,
@@ -38,8 +36,4 @@ export function data(chart) {
   }
 
   return out;
-}
-
-async function getData(){
-
 }
