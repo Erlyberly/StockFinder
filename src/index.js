@@ -15,7 +15,27 @@ const stock = require('./data/stock');
 //const compare = require('./util/compare');
 const line = require('./data/line');
 
-let symbols = ['aapl', 'baba'];
+function setCookie(cname, cvalue) {
+    document.cookie = cname + "=" + cvalue + ";";
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+let symbols = [];
 let loaded = false;
 
 let shared = sharedComponentData({
@@ -30,7 +50,40 @@ async function initialize(){
 
 initialize();
 
+//Navbar used on all routes
+class Navbar extends Component {
+  input = '';
 
+  render() {
+    return (
+      <div id="navbar">
+        <nav className="navbar navbar-default bg-dark justify-content-between">
+          <a id="navbarTitle" className="navbar-brand" href="/">
+          Stockfinder
+          </a>
+          <form className="form-inline" style={{color: 'white', fontSize:'18px'}}>
+            <input className="form-control mr-sm-2" type="search" placeholder="Ticker / Name" aria-label="Search"
+            value={this.input} onChange={(e) => {this.input = e.target.value}}/>
+            <Link to={'/' + this.input}>
+            <button className="btn btn-outline-primary my-2 my-sm-0" type="submit" onClick={() => this.search()}>
+              Search
+            </button>
+            </Link>
+          </form>
+        </nav>
+      </div>
+    );
+  }
+
+  search(){
+      console.log(this.amountArticles);
+      shared.Stocks = [];
+      updateDashboard = false;
+      window.location.reload();
+  }
+}
+
+//Reusable cards with optional title
 class Card extends Component<{ id?: string, className?: string, title?: React.Node, children?: React.Node }> {
   render() {
     return (
@@ -44,18 +97,27 @@ class Card extends Component<{ id?: string, className?: string, title?: React.No
   }
 }
 
-class Row extends Component<{ id?: string, className?: string, style?: {}, children?: any }> {
+//Sidebar for dashboard
+class Sidebar extends Component {
   render() {
     return (
-      <div id={this.props.id} className={this.props.className} style={this.props.style}>
-        {this.props.children}
+      <div id="sidebar" className="nav-side-menu">
       </div>
     );
   }
+
+  async buttonClicked() {
+    if ((await dao.getStockInfo(this.ticker, 'price')) !== 404) {
+      shared.stocks.push(new stock.Stock(this.ticker));
+    }
+  }
 }
 
-//Main site. Exact path: '/'
+//Main site. Exact path: '/'. To make a search: Exact path: '/:key'
 let updateDashboard = true;
+let articles = [];
+let amountShowingCap = 50;
+let amountShowing = 0;
 class Dashboard extends Component<{ match: { params: { key: string } } }> {
 
   changeClass = 'change-positive';
@@ -68,64 +130,54 @@ class Dashboard extends Component<{ match: { params: { key: string } } }> {
 
   render() {
     return (
-      <Row className="page">
+      <div className="page">
         <Navbar />
-        <Row id="dashboard-main">
+        <div id="dashboard-main">
           <Sidebar />
-          <Row id="dashboard">
-            {shared.stocks.map(stock => (
-              <Row key={stock.ticker} className={stock.visible ? 'article-visible' : 'article-hidden'}>
-                <a href={'#/StockInfo/' + stock.ticker}>
-                  <Row className="article-title">{stock.name + ' (' + stock.ticker + ')'}</Row>
-                </a>
-                <Row className="sector">{stock.sector}</Row>
-                <Row>
-                  <Row className="price">{stock.price} USD</Row>
-                  <Row className={stock.changePercent > 0 ? 'change-positive' : 'change-negative'}>
-                    ({stock.changePercent > 0 ? '+' : ''}
-                    {Math.round(stock.changePercent * 10000) / 100}
-                    %)
-                  </Row>
-                  <Progress
-                    percent={88}
-                    status="default"
-                    theme={{
-                      default: {
-                        symbol: '❤️',
-                      }
-                    }}
-                  />
-                </Row>
-              </Row>
-            ))}
-          </Row>
-        </Row>
-      </Row>
+          <Articles />
+        </div>
+      </div>
     );
+  }
+
+  addArticles(){
+    if(amountShowing < amountShowingCap){
+      while((amountShowing < amountShowingCap) && (amountShowing < articles.length)){
+        shared.stocks.push(new stock.Stock(articles[amountShowing]));
+        amountShowing++;
+      }
+    }
+    let dashboardLoader = setInterval(function(){
+      if(shared.stocks.length > 0){
+        if(shared.stocks[(shared.stocks.length - 1)].init){
+          updateArticles = true;
+          clearInterval(dashboardLoader);
+        }
+      }else{
+        updateArticles = true;
+      }
+    }, 100);
   }
 
   mounted() {
     updateDashboard = true;
     if(this.props.match.params.key != null){
-      this.search = this.props.match.params.key.toUpperCase();
+      this.search = this.props.match.params.key;
     }
 
-    let regExp = new RegExp(this.search);
-
-    let count = 0;
+    let regExp = new RegExp(this.search, 'i');
     symbols.forEach(symbol => {
-      if(symbol['symbol'].match(regExp) != null || symbol['name'].match(regExp)){
-        if(count < 6){
-          shared.stocks.push(new stock.Stock(symbol['symbol']));
-          count++;
-        }
+      if(symbol['symbol'].match(regExp) != null || symbol['name'].match(regExp) != null){
+        articles.push(symbol['symbol']);
       }
     });
+
+    this.addArticles();
 
     this.interval = setInterval(() => {
       shared.stocks.map(stock => stock.update(stock.ticker));
       this.forceUpdate();
-    }, 2000);
+    }, 3000);
   }
 
   beforeUnmount() {
@@ -133,52 +185,46 @@ class Dashboard extends Component<{ match: { params: { key: string } } }> {
   }
 }
 
-//Navbar for dashboard
-class Navbar extends Component {
-  input = '';
+//Articles for dashboard main content
+let updateArticles = false;
+class Articles extends Component {
+
+  /*shouldComponentUpdate(nextProps, nextState) {
+    return updateArticles;
+  }*/
 
   render() {
-    return (
-      <Row id="navbar">
-        <nav className="navbar navbar-dark bg-dark justify-content-between">
-          <a id="navbarTitle" className="navbar-brand" href="/">
-            Stockfinder
+    return updateArticles ? (
+      <div id='max-size'>
+        {shared.stocks.map(stock => (
+          <a key={stock.ticker} href={'#/StockInfo/' + stock.ticker}>
+          <div key={stock.ticker} className={stock.visible ? 'article-visible' : 'article-hidden'}>
+            <div className="article-title">{stock.name + ' (' + stock.ticker + ')'}</div>
+            <div className="sector">{stock.sector}</div>
+            <div>
+              <div className="price">{stock.price} USD</div>
+              <div className={stock.changePercent > 0 ? 'change-positive' : 'change-negative'}>
+                ({stock.changePercent > 0 ? '+' : ''}
+                {Math.round(stock.changePercent * 10000) / 100}
+                %)
+              </div>
+                <Progress
+                  percent={88}
+                  status="default"
+                  theme={{
+                  default: {
+                    symbol: '❤️',
+                  }
+                }}
+                />
+              </div>
+            </div>
           </a>
-          <form className="form-inline">
-            <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"
-            value={this.input} onChange={(e) => {this.input = e.target.value}}/>
-            <Link to={'/' + this.input}>
-            <button className="btn btn-outline-success my-2 my-sm-0" type="submit" onClick={() => this.search()}>
-              Search
-            </button>
-            </Link>
-          </form>
-        </nav>
-      </Row>
-    );
-  }
-
-  search(){
-      shared.Stocks = [];
-      updateDashboard = false;
-      window.location.reload();
-  }
-}
-
-//Sidebar for dashboard
-class Sidebar extends Component {
-  render() {
-    return (
-      <Row id="sidebar" className="nav-side-menu">
-        sidebar
-      </Row>
-    );
-  }
-
-  async buttonClicked() {
-    if ((await dao.getStockInfo(this.ticker, 'price')) !== 404) {
-      shared.stocks.push(new stock.Stock(this.ticker));
-    }
+        ))}
+      </div>
+    ) : (
+      <span style={{fontSize: '30px', color: 'white', marginLeft: '10px'}}>Searching...</span>
+      );
   }
 }
 
@@ -194,26 +240,26 @@ class StockInfo extends Component<{ update: boolean, match: { params: { ticker: 
 
   render() {
     return this.loaded ? (
-      <Row className="page">
+      <div className="page">
         <Navbar />
-        <Row id="main-stockinfo">
-          <Row id="stockinfo-price">
-            <Row>
+        <div id="main-stockinfo">
+          <div id="stockinfo-price">
+            <div>
               <h1 id="stockinfo-title">{this.stock.name}</h1>
               <h2 id="stockinfo-market">{this.stock.market}</h2>
-            </Row>
-            <Row>
-              <Row className="stockinfo-change left">{this.stock.price} USD</Row>
-              <Row
+            </div>
+            <div>
+              <div className="stockinfo-change left">{this.stock.price} USD</div>
+              <div
                 className={(this.stock.changePercent > 0 ? 'change-positive' : 'change-negative') + ' stockinfo-change'}
               >
                 ({this.stock.changePercent > 0 ? '+' : ''}
                 {Math.round(this.stock.changePercent * 10000) / 100}
                 %)
-              </Row>
-            </Row>
-          </Row>
-          <Row className="h-100 w-100">
+              </div>
+            </div>
+          </div>
+          <div className="h-100 w-100">
             <Card id="graph">
               <div className="btn-group d-flex" role="group">
                 <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('1d')}>
@@ -241,22 +287,22 @@ class StockInfo extends Component<{ update: boolean, match: { params: { ticker: 
               <Line data={line.data(this.stock.chart)} />
             </Card>
             <Card id="essentials" title="Essentials">
-              <Row className="info">Market Cap: {Math.round((this.stock.marketcap / 1000000000) * 1000) / 1000} B</Row>
-              <Row className="info">EPS (TTM): {Math.round(this.stock.ttmEPS * 1000) / 1000}</Row>
-              <Row className="info">PE (TTM): {this.stock.peRatio}</Row>
-              <Row className="info">
+              <div className="info">Market Cap: {Math.round((this.stock.marketcap / 1000000000) * 1000) / 1000} B</div>
+              <div className="info">EPS (TTM): {Math.round(this.stock.ttmEPS * 1000) / 1000}</div>
+              <div className="info">PE (TTM): {this.stock.peRatio}</div>
+              <div className="info">
                 {' '}
                 Dividend: {this.stock.dividendRate} ({Math.round(this.stock.dividendYield * 1000) / 1000}
                 %)
-              </Row>
-              <Row className="info">YearAgoChangePercent : {this.stock.yearAgoChangePercent}</Row>
-              <Row className="info">
+              </div>
+              <div className="info">YearAgoChangePercent : {this.stock.yearAgoChangePercent}</div>
+              <div className="info">
                 PEG (not working): {Math.round((this.stock.peRatio * 100) / this.stock.yearAgoChangePercent) / 1000}
-              </Row>
+              </div>
             </Card>
-          </Row>
-        </Row>
-      </Row>
+          </div>
+        </div>
+      </div>
     ) : (
       <span>Loading...</span>
     );
@@ -293,11 +339,11 @@ function rootRender(){
   if (root){
     ReactDOM.render(
       <HashRouter>
-        <Row className="page">
+        <div className="page">
           <Route exact path="/" component={Dashboard} />
           <Route exact path="/:key" component={Dashboard} />
           <Route path="/StockInfo/:ticker" component={StockInfo} />
-        </Row>
+        </div>
       </HashRouter>,
       root
     );
