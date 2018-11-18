@@ -243,23 +243,47 @@ class StockInfo extends Component<{ update: boolean, match: { params: { ticker: 
       <div className="page">
         <Navbar />
         <div id="main-stockinfo">
+          <div className="container-fluid">
+            <ul className="nav nav-tabs" id="tabs">
+              <li>
+                <a className="nav-link active" href="">Overview</a>
+              </li>
+              <li>
+                <a className="nav-link" href="">Key metrics</a>
+              </li>
+              <li>
+                <a className="nav-link" href="">Financials</a>
+              </li>
+              <li>
+                <a className="nav-link" href="">Stock news</a>
+              </li>
+              <li>
+                <a className="nav-link" href="">Insider information</a>
+              </li>
+            </ul>
+          </div>
           <div id="stockinfo-price">
-            <div>
-              <h1 id="stockinfo-title">{this.stock.name}</h1>
-              <h2 id="stockinfo-market">{this.stock.market}</h2>
-            </div>
-            <div>
-              <div className="stockinfo-change left">{this.stock.price} USD</div>
-              <div
-                className={(this.stock.changePercent > 0 ? 'change-positive' : 'change-negative') + ' stockinfo-change'}
-              >
-                ({this.stock.changePercent > 0 ? '+' : ''}
-                {Math.round(this.stock.changePercent * 10000) / 100}
-                %)
+            <div id="info">
+              <div>
+                <h1 id="stockinfo-title">{this.stock.name}</h1>
+                <h2 id="stockinfo-market">{this.stock.market}</h2>
+              </div>
+              <div>
+                <div className="stockinfo-change left">{this.stock.price} USD</div>
+                <div
+                  className={(this.stock.changePercent > 0 ? 'change-positive' : 'change-negative') + ' stockinfo-change'}
+                >
+                  ({this.stock.changePercent > 0 ? '+' : ''}
+                  {Math.round(this.stock.changePercent * 10000) / 100}
+                  %)
+                </div>
               </div>
             </div>
+            <div id="company-logo">
+              <img src={this.stock.logo} alt={this.stock.name}></img>
+            </div>
           </div>
-          <div className="h-100 w-100">
+          <div className="h-100 w-100" id="overview">
             <Card id="graph">
               <div className="btn-group d-flex" role="group">
                 <button type="button" className="btn btn-secondary w-100" onClick={() => this.changeGraph('1d')}>

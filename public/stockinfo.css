@@ -22,6 +22,7 @@
 
 #stockinfo-price {
   margin-bottom: 20px;
+  margin-top: 20px;
 }
 
 #graph {
@@ -33,4 +34,20 @@
   padding-top: 4px;
   padding-right: 15px;
   font-size: 29px;
+}
+
+#info {
+  float: right;
+  width: 90%;
+}
+
+#company-logo {
+  float: left;
+  width: 10%;
+}
+
+#overview {
+  float: left;
+  width: 100%;
+  margin-top: 50px;
 }

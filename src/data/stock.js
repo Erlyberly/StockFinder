@@ -30,6 +30,7 @@ export class Stock {
   sharesOutstanding;
   dividendRate;
   dividendYield;
+  logo;
 
   constructor(ticker: string) {
     this.visible = true;
@@ -41,6 +42,8 @@ export class Stock {
     this.stats = await dao.getStockInfo(ticker, 'stats');
     this.quote = await dao.getStockInfo(ticker, 'quote');
     this.earnings = await dao.getStockInfo(ticker, 'earnings');
+    let logoObject = await dao.getStockInfo(ticker, 'logo');
+    this.logo = logoObject["url"];
 
     this.name = this.stats['companyName'];
     this.price = this.quote['latestPrice'];
